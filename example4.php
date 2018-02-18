@@ -1,5 +1,5 @@
 <?php
-echo "hello world";
+
 session_start();
 
 $page = isset($_POST['page']) ? $_POST['page'] : 1;

@@ -72,15 +72,15 @@ if (isset($_GET['action']) && $_GET['action'] == 'getdata') {
 }
 ?>    
 <style type="text/css">
-	.labelfrm {
-		display:block;
-		font-size:small;
-		margin-top:5px;
-	}
-	.error {
-		font-size:small;
-		color:red;
-	}
+.labelfrm {
+  display:block;
+  font-size:small;
+  margin-top:5px;
+}
+.error {
+  font-size:small;
+  color:red;
+}
 </style>
 <script type="text/javascript" src="assets/js/jquery.min.js"></script>
 <script type="text/javascript" src="assets/js/jquery.form.js"></script>
@@ -113,73 +113,74 @@ if (isset($_GET['action']) && $_GET['action'] == 'getdata') {
             	{display: 'Status', name : 'nama_status', width : 200, sortable : true, align: 'center', process: doaction}
             	],
 
-               buttons : [
-               <?php if($_SESSION['role'] == 'super_admin'){ ?>
-               {
-                name : 'Edit',
-                bclass : 'edit',
-                onpress : aksi
+             buttons : [
+             <?php if($_SESSION['role'] == 'super_admin'){ ?>
+                 {
+                    name : 'Edit',
+                    bclass : 'edit',
+                    onpress : aksi
+                }
+                ,
+
+                {
+                    name : 'Delete',
+                    bclass : 'delete',
+                    onpress : aksi
+                }
+                ,
+
+                {
+                    separator : true
+                } 
+                <?php }?>
+                ],
+                searchitems : [
+                {display: 'Ip address', name : 'ip_address'},
+                {display: 'Nama Area', name : 'nama_area'},
+                {display: 'nama status', name : 'nama_status', isdefault: true}
+                ],
+
+                sortname: 'id_client',
+                sortorder: 'asc',
+                usepager: true,
+                title: 'Data Jaringan Pertamina',
+                useRp: true,
+                rp: 15,
+                showTableToggleBtn : true,
+                width: '1010',
+                height: 'auto'
             }
-            ,
-            
-            {
-                name : 'Delete',
-                bclass : 'delete',
-                onpress : aksi
-            }
-            ,
-            
-            {
-                separator : true
-            } 
-            <?php }?>
-            ],
-            searchitems : [
-            {display: 'Ip address', name : 'ip_address'},
-            {display: 'Nama Area', name : 'nama_area'},
-            {display: 'nama status', name : 'nama_status', isdefault: true}
-            ],
+            );
 
-            sortname: 'id_client',
-            sortorder: 'asc',
-            usepager: true,
-            title: 'Data Jaringan Pertamina',
-            useRp: true,
-            rp: 15,
-            showTableToggleBtn : true,
-            width: '1010',
-            height: 'auto'
-        }
-        );
+        }); 
+    function doaction( celDiv, id ) {
+       $( celDiv ).click( function() {
+          var id_client = $(this).parent().parent().children('td').eq(0).text();
+          $.getJSON ('tampil_net.php',{action:'get_client',id_client:id_client}, function (json) {
+             $('#ip_address').val(json.ip_address);
+             $('#id_area').val(json.id_area);
+             $('#id_status').val(json.id_status);
+         }); 
+          $('#id_client').attr('readonly','readonly');
+          $('#input').attr('disabled','disabled');
+          $('#edit, #delete').removeAttr('disabled');
+      });
+   }
+   function showResponse(responseText, statusText) {
+       var data = responseText['data'];
+       var pesan = responseText['pesan'];
+       //console.log(responseText);
+       //alert(pesan);
+       //resetForm();
+       $('#flex1').flexReload();
+   }
+   function resetForm() {
+       $('#input').removeAttr('disabled');
+       $('#edit, #delete').attr('disabled','disabled');
+       $('#id_client').removeAttr('readonly');
+   }
 
-}); 
-function doaction( celDiv, id ) {
-	$( celDiv ).click( function() {
-		var id_client = $(this).parent().parent().children('td').eq(0).text();
-		$.getJSON ('tampil_net.php',{action:'get_client',id_client:id_client}, function (json) {
-			$('#ip_address').val(json.ip_address);
-			$('#id_area').val(json.id_area);
-			$('#id_status').val(json.id_status);
-		}); 
-		$('#id_client').attr('readonly','readonly');
-		$('#input').attr('disabled','disabled');
-		$('#edit, #delete').removeAttr('disabled');
-	});
-}
-function showResponse(responseText, statusText) {
-	var data = responseText['data'];
-	var pesan = responseText['pesan'];
-	alert(pesan);
-	resetForm();
-	$('#flex1').flexReload();
-}
-function resetForm() {
-	$('#input').removeAttr('disabled');
-	$('#edit, #delete').attr('disabled','disabled');
-	$('#id_client').removeAttr('readonly');
-}
-
-function aksi(com, grid) {
+   function aksi(com, grid) {
     if (com == 'Delete') {
         var conf = confirm('Delete ' + $('.trSelected', grid).length + ' items?')
         if(conf){
@@ -188,6 +189,9 @@ function aksi(com, grid) {
                     $.get('example4.php', { Delete: value.firstChild.innerText}
                         , function(){
                                         // when ajax returns (callback), update the grid to refresh the data
+                                        var id_client = value.children[0].innerText; 
+                                        window.location.href="proses/proses_hapus_client.php?id_client="+id_client;
+                                        
                                         $("#flex1").flexReload();
                                     });
                 });    
@@ -198,28 +202,13 @@ function aksi(com, grid) {
         if(conf){
             $.each($('.trSelected', grid),
                 function(key, value){
-                                // collect the data
-                                var Orgid_client = value.children[0].innerText; // in case we're changing the key
-                                var ip_address = prompt("Please enter the ip_address",value.children[1].innerText);
-                                var nama_area = prompt("Please enter the nama_area",value.children[2].innerText);
-                                var subnet_mask = prompt("Please enter the subnet_mask",value.children[3].innerText);
-                                var Vlan = prompt("Please enter the Vlan",value.children[4].innerText);
-
-                                // call the ajax to save the data to the session
-                                $.get('example4.php', 
-                                    { Edit: true
-                                    	, id_client : id_client
-                                        , ip_address : ip_address
-                                        , nama_area : nama_area
-                                        , subnet_mask: subnet_mask
-                                        , vlan: vlan}
-                                        , function(){
-                                        // when ajax returns (callback), update the grid to refresh the data
-                                        $("#flex1").flexReload();
-                                    });
-                            });    
-}
-}
+                // in case we're changing the key
+                var id_client = value.children[0].innerText; 
+                window.location.href="form_edit_client.php?id_client="+id_client;
+                //console.log(id_client);
+            });
+        }
+    }
 }
 </script>
 <table id="flex1" style="display:none font-size:18px;"></table>

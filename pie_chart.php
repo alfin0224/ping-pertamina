@@ -1,26 +1,3 @@
-<?php
-include "koneksi_db/koneksi.php";
-$sqltotal = mysqli_query($conn, "SELECT COUNT(ip_address) FROM client");
-$sqlreply = mysqli_query($conn, "SELECT COUNT(S.nama_status) FROM client C INNER JOIN status S ON (C.id_status = S.id_status) where C.id_status=1");
-$sqlrto = mysqli_query($conn, "SELECT COUNT(S.nama_status) FROM client C INNER JOIN status S ON (C.id_status = S.id_status) where C.id_status=2");
-$sqldu = mysqli_query($conn, "SELECT COUNT(S.nama_status) FROM client C INNER JOIN status S ON (C.id_status = S.id_status) where C.id_status=3");
-
-$totalrow = mysqli_fetch_row($sqltotal);
-
-$total1 = mysqli_fetch_row($sqlreply);
-// $persen1 = $total1[0] / $totalrow[0] * 100;
-
-$total2 = mysqli_fetch_row($sqlrto);
-// $persen2 = $total2[0] / $totalrow[0] * 100;
-
-$total3 = mysqli_fetch_row($sqldu);
-// $persen3 = $total3[0] / $totalrow[0] * 100;
-    // The `$arrData` array holds the chart attributes and data
-
-/*Create an object for the column chart using the FusionCharts PHP class constructor. Syntax for the constructor is ` FusionCharts("type of chart", "unique chart id", width of the chart, height of the chart, "div id to render the chart", "data format", "data source")`. Because we are using JSON data to render the chart, the data format will be `json`. The variable `$jsonEncodeData` holds all the JSON data for the chart, and will be passed as the value for the data source parameter of the constructor.*/
-
-
-?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -28,8 +5,21 @@ $total3 = mysqli_fetch_row($sqldu);
   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
   <script type="text/javascript" src="assets/js/bundle.min.js"></script>
   <script type="text/javascript" src="assets/js/hulk-light.js"></script>
+  <script type="text/javascript" src="assets/js/jquery-1.12.4.min.js"></script>
+</head>
+<body>
+
+  <div id="chart-container1"></div>
   <script type="text/javascript">
-    FusionCharts.ready(function() {
+    function setPieChart() {
+        // your code
+
+        $.ajax({
+            url: 'http://localhost/ping-pertamina/proses/json_pie.php'
+            ,type:"POST"
+            ,dataType:"json"
+            ,success: function(data){
+              FusionCharts.ready(function() {
       var pieChart = new FusionCharts({
         type: 'pie3d',
         renderAt: 'chart-container1',
@@ -62,30 +52,39 @@ $total3 = mysqli_fetch_row($sqldu);
             "baseFontColor": "#0068fc",
             "showLegend": "1",
             "animation":"0"
-
           },
-          "data": [{
-            "color": "#f72222",
-            "label": "Request Time Out",
-            "value": <?php echo json_encode($total2[0]); ?>
-          }, {
-            "color": "#eff2f",
-            "label": "Reply",
-            "value": <?php echo json_encode($total1[0]); ?>
-          }, {
-            "color": "#e29d1f",
-            "label": "Destination Unreachable",
-            "value": <?php echo json_encode($total3[0]); ?>
-          }]
+          "data": data
         }
       })
       pieChart.render();
+    });
+            }
+        });
+        
+        
+
+        //pieChart.setJSONData(pieData);
+        
+        return setPieChart;
+    }
+    $(document).ready(function () {
+          //setJSONData 
+          console.log(setInterval(setPieChart(), 10000));
+          //console.log(data);
+/*
+        setInterval(function(){ 
+          $.ajax({
+            url: 'http://localhost/ping-pertamina/proses/json_pie.php',
+              type:"POST",
+              dataType:"json",
+              success: function(data){
+
+              }
+            });
+        },10000);*/
+        //
 
     });
-</script>
-</head>
-<body>
-
-  <div id="chart-container1"></div>
+  </script>
 </body>
 </html>

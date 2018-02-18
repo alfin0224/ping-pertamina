@@ -1,9 +1,35 @@
 <?php
 include "koneksi_db/koneksi.php";
 include("proses/cek_login.php");
-$id = $_GET['id_client'];
-$sql = mysqli_query($conn, "SELECT C.id_client, C.ip_address, C.id_area, C.subnet_mask, C.vlan, K.nama_area FROM client C INNER JOIN area K ON (C.id_area = K.id_area) WHERE id_client = $id LIMIT 1");
-$client = mysqli_fetch_array($sql);
+$client = array();
+if (isset($_GET['id_client'])) {
+    $id = $_GET['id_client'];
+    $stmt   = mysqli_prepare($conn, "SELECT * FROM client WHERE id_client = ?");
+    mysqli_stmt_bind_param($stmt, "i", $_GET['id_client']);
+    $result = mysqli_stmt_execute($stmt);
+    if ($result) {
+        $show   = $stmt->get_result();
+        $client = $show->fetch_assoc();
+    }
+}
+$nama_area  = array();
+$sql_area   = "select area.id_area,area.nama_area from area inner join client on client.id_area = area.id_area GROUP BY client.id_area";
+$result_area = mysqli_query($conn,$sql_area);
+
+while ($data = mysqli_fetch_assoc($result_area)) {
+    
+    if (isset($data['nama_area'])) {
+        $nama_area[] = array(
+            'id_area' =>$data['id_area'],
+            'nama_area' =>$data['nama_area']
+        );
+    }
+}
+//var_dump($data = mysqli_fetch_assoc($result_area));
+
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -74,13 +100,26 @@ $client = mysqli_fetch_array($sql);
                                 <br>
                                 <label>Nama Area</label><br>
                                 <select class="form-control flat" name="id_area">
-                                    <option value="<?php echo $client['id_area'];?>"><?php echo $client['nama_area'];?></option>
-                                    <option>-------------------</option>
-                                    <option value="1">HODN</option>
-                                    <option value="2">HO Lama</option>
-                                    <option value="3">Maintenance Office</option>
-                                    <option value="4">Teljar</option>
-                                    <option value="5">FOC 2</option>
+                                    
+                                    <?php
+                                        if (isset($nama_area)) {
+                                            foreach ($nama_area as $key => $value) {
+
+                                                if (
+                                                    isset($client['id_area']) &&
+                                                    $client['id_area'] == $value['id_area']
+                                                    ) {
+                                                    $option = '<option value="'.$value['id_area'].'" selected>';
+                                                }else{
+                                                    $option = '<option value="'.$value['id_area'].'">';
+                                                }
+
+                                                $option .= strtoupper($value['nama_area']);
+                                                $option .='</option>';
+                                                echo $option;
+                                            }
+                                        }
+                                    ?>
                                 </select><br>
                                 <label>Subnet Mask</label>
                                 <input class="form-control" type="text" name="subnet_mask" value="<?php echo $client['subnet_mask']; ?>"><br>
