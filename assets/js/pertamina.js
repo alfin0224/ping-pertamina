@@ -56,3 +56,18 @@ function konfirmasi_ubah()
 		return false;
 	}
 }
+
+function konfirmasi_reset_password()
+{
+	var konfirmasi = confirm("apakah anda yakin akan mereset password?")
+
+	if (konfirmasi == true)
+	{
+		return true;
+	}
+
+	else
+	{
+		return false;
+	}
+}

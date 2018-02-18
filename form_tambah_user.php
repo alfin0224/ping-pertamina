@@ -37,15 +37,20 @@ include("proses/cek_login.php");
         <!-- Breadcrumb -->
         <ol class="breadcrumb">
             <li><a href="net_monitoring.php?page=1">Monitoring Jaringan</a></li>
-            <li class="active">Daftar Area</li>
+            <li><a href="daftar_kantor.php">Daftar Area</a></li>
             <?php if($_SESSION['role'] == 'super_admin'){ ?>
-            <li><a href="user.php">User Admin</a></li>
+            <li class="active">User Admin</li>
             <?php } ?>
             <!-- Breadcrumb Menu-->
             <li class="breadcrumb-menu">
                 <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-                    <a class="btn btn-secondary" href="#"><i class="icon-speech"></i></a>
                     <span class="btn btn-secondary"><i class="icon-graph"></i> &nbsp;Dashboard</span>
+                    <div class="btn-group" role="group">
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <div class="dropdown-header text-xs-center">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </li>
         </ol>
@@ -54,24 +59,35 @@ include("proses/cek_login.php");
                 <div class="card">
                     <div class="card-header">
 
-                        <i class="fa fa-edit"></i> Tambah Data Area / <a href="daftar_kantor.php"><small class="text-muted"> Back </a></small>
+                        <i class="fa fa-edit"></i> Tambah User Admin / <a href="user.php"><small class="text-muted"> Back </a></small>
                         <div class="card-actions">
                         </div>
                     </div>
                     <div class="card-block">
-                        <form class="form_inline" method="post" action="proses/proses_tambah_kantor.php" style="text-align:left;">
+                        <form class="form_inline" method="post" action="proses/proses_tambah_user.php" style="text-align:left;">
                             <div class="form-group">
-                                <label>Nama Kantor</label><br>
-                                <input class="form-control" type="text" name="nama_area" required="required">
+                                <label>Fullname</label><br>
+                                <input class="form-control" type="text" name="fullname" required="required">
                                 <br>
-                                <label>No Telepon Kantor</label><br>
-                                <input class="form-control" type="text" name="telp_area" required="required">
+                                <label>Username</label><br>
+                                <input class="form-control" type="text" name="username" required="required">
                                 <br>
+                                <label>Email</label><br>
+                                <input class="form-control" type="text" name="email" required="required">
                                 <br>
-                                <label>Alamat Kantor</label><br>
-                                <input class="form-control" type="text" name="alamat" required="required">
+                                <label>Role</label><br>
+                                <select class="form-control flat" name="role">
+                                    <option value="admin">Admin</option>
+                                    <option value="super_admin">Super Admin</option>
+                                </select><br>
+                                <label>Phone Number</label><br>
+                                <input class="form-control" type="text" name="no_hp" required="required">
                                 <br>
-
+                                <label>Password</label><br>
+                                <input class="form-control" type="password" name="password" required="required"><br>
+                                <label>Confirm Password</label><br>
+                                <input class="form-control" type="password" name="confirm_password" required="required">
+                                <br>
                                 <button class="btn btn-info" type="submit" name="simpan" class="button" onclick="return konfirmasi_kirim();"> Simpan </button>
                                 <button type="reset" class="btn btn-danger" onclick="return konfirmasi_reset();">Reset</button>
 

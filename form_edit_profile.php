@@ -1,6 +1,9 @@
 <?php
 include "koneksi_db/koneksi.php";
 include("proses/cek_login.php");
+$session_aktif = $_SESSION['admin'];
+$sql = mysqli_query($conn, "SELECT * FROM user WHERE username='$session_aktif'");
+$user = mysqli_fetch_array($sql);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -36,15 +39,14 @@ include("proses/cek_login.php");
         </div>
         <!-- Breadcrumb -->
         <ol class="breadcrumb">
-            <li><a href="net_monitoring.php?page=1">Monitoring Jaringan</a></li>
-            <li class="active">Daftar Area</li>
+            <li><a href="user.php">Monitoring Jaringan</a></li>
+            <li><a href="daftar_kantor.php">Daftar Area</a></li>
             <?php if($_SESSION['role'] == 'super_admin'){ ?>
             <li><a href="user.php">User Admin</a></li>
             <?php } ?>
             <!-- Breadcrumb Menu-->
             <li class="breadcrumb-menu">
                 <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-                    <a class="btn btn-secondary" href="#"><i class="icon-speech"></i></a>
                     <span class="btn btn-secondary"><i class="icon-graph"></i> &nbsp;Dashboard</span>
                 </div>
             </li>
@@ -53,28 +55,27 @@ include("proses/cek_login.php");
             <div class="animated fadeIn">
                 <div class="card">
                     <div class="card-header">
-
-                        <i class="fa fa-edit"></i> Tambah Data Area / <a href="daftar_kantor.php"><small class="text-muted"> Back </a></small>
+                        <i class="fa fa-edit"></i> Edit Profile / <a href="profile.php"><small class="text-muted"> Back </a></small>
                         <div class="card-actions">
                         </div>
                     </div>
                     <div class="card-block">
-                        <form class="form_inline" method="post" action="proses/proses_tambah_kantor.php" style="text-align:left;">
-                            <div class="form-group">
-                                <label>Nama Kantor</label><br>
-                                <input class="form-control" type="text" name="nama_area" required="required">
+                        <form class="form_inline" method="post" action="proses/proses_edit_profile.php" enctype="multipart/form-data" style="text-align:left;">
+                            <div class="form-group">                                
+                                <input type="hidden" value="<?php echo $session_aktif ?>" name="session_aktif"></input>
+                                <label>Full Name</label><br>
+                                <input class="form-control" type="text" name="nama_lengkap" value="<?php echo $user['nama_lengkap']; ?>"><br>
+                                <label>Email</label>
+                                <input class="form-control" type="text" name="email" value="<?php echo $user['email']; ?>"><br>
+                                <label>Phone Number</label>
+                                <input class="form-control" type="text" name="no_hp" value="<?php echo $user['no_hp']; ?>"><br>
+                                <label>Password</label>
+                                <input class="form-control" type="password" name="password" value="<?php echo $user['no_hp']; ?>"><br>
+                                <label style="padding-right:52px">Profile Image</label><br>
+                                <input type="file" name="profile_image" size="80" required /><br><br>
+                                <input type="hidden" name="MAX_FILE_SIZE" value="8000000" /> <!-- dalam byte {8000000b = 8Mb} -->
                                 <br>
-                                <label>No Telepon Kantor</label><br>
-                                <input class="form-control" type="text" name="telp_area" required="required">
-                                <br>
-                                <br>
-                                <label>Alamat Kantor</label><br>
-                                <input class="form-control" type="text" name="alamat" required="required">
-                                <br>
-
-                                <button class="btn btn-info" type="submit" name="simpan" class="button" onclick="return konfirmasi_kirim();"> Simpan </button>
-                                <button type="reset" class="btn btn-danger" onclick="return konfirmasi_reset();">Reset</button>
-
+                                <button class="btn btn-info" type="submit" name="simpan" class="button" onclick="return konfirmasi_ubah();"> Simpan </button>            
                             </div>
                         </form>
                     </div>

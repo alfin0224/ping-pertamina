@@ -1,8 +1,8 @@
 <?php
 /* koneksi ke db */
 include "koneksi_db/koneksi.php";
+include("proses/cek_login.php");
 /* akhir koneksi db */
-
 error_reporting(E_ALL ^ (E_NOTICE | E_WARNING));
 
 if (isset($_GET['action']) && $_GET['action'] == 'getdata') {
@@ -44,8 +44,21 @@ if (isset($_GET['action']) && $_GET['action'] == 'getdata') {
 		array_push($datax_r, $datax);
 	}
 	$data['rows'] = $datax_r;
-	echo json_encode($data);
-	exit;
+    // $json[] = array(
+    //     'id_client'=>$data['id_client'],
+    //     'ip_address'=>$data['ip_address'],
+    //     'nama_area'=>$data['nama_area'],
+    //     'subnet_mask'=>$data['subnet_mask'],
+    //     'vlan'=>$data['vlan'],
+    //     'received'=>$data['received'].' ms',
+    //     'lost'=>$data['lost'].' ms',
+    //     'minimum'=>$data['minimum'].' ms',
+    //     'maksmimum'=>$data['maksmimum'].' ms',
+    //     'average'=>$data['average'].' ms',
+    //     'nama_status'=>$data['nama_status'],
+    //     );
+    echo json_encode($data);
+    exit;
 } else if (isset($_GET['action']) && $_GET['action'] == 'get_client') {
 	$id_client = $_GET['id_client'];
 	$query = "SELECT C.id_client, C.ip_address, K.nama_area, C.subnet_mask, C.vlan, C.received, C.lost, C.minimum, C.maksimum, C.average, S.nama_status, C.id_status
@@ -53,6 +66,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'getdata') {
 	INNER JOIN area K ON (C.id_area = K.id_area) WHERE id_client='$id_client'";
 	$sql = mysqli_query($conn, $query);
 	$row = mysqli_fetch_assoc($sql);
+
 	echo json_encode ($row);
 	exit;
 }
@@ -95,54 +109,59 @@ if (isset($_GET['action']) && $_GET['action'] == 'getdata') {
             	{display: 'Lost', name : 'lost ms', width : 70, sortable : true, align: 'center',  process: doaction},
             	{display: 'Minimum', name : 'minimum', width : 70, sortable : true, align: 'center', process: doaction},
             	{display: 'Maksimum', name : 'maksmimum', width : 80, sortable : true, align: 'center', process: doaction},
-            	{display: 'Average', name : 'average', width : 70, sortable : true, align: 'center', process: doaction},
+            	{display: 'Average', name : 'average', width : 90, sortable : true, align: 'center', process: doaction},
             	{display: 'Status', name : 'nama_status', width : 200, sortable : true, align: 'center', process: doaction}
             	],
-            	    buttons : [
-                    {
-                        name : 'Edit',
-                        bclass : 'edit',
-                        onpress : aksi
-                    }
-                    ,
-                    {
-                        name : 'Delete',
-                        bclass : 'delete',
-                        onpress : aksi
-                    }
-                    ,
-                    {
-                        separator : true
-                    } 
-                ],
-            	searchitems : [
-            	{display: 'Ip address', name : 'ip_address'},
-            	{display: 'Nama Area', name : 'nama_area'},
-            	{display: 'nama status', name : 'nama_status', isdefault: true}
-            	],
 
-            	sortname: 'id_client',
-            	sortorder: 'asc',
-            	usepager: true,
-            	title: 'Data Jaringan Pertamina',
-            	useRp: true,
-            	rp: 15,
-            	showTableToggleBtn : true,
-            	width: '1010',
-            	height: 'auto'
+               buttons : [
+               <?php if($_SESSION['role'] == 'super_admin'){ ?>
+               {
+                name : 'Edit',
+                bclass : 'edit',
+                onpress : aksi
             }
-            );
+            ,
+            
+            {
+                name : 'Delete',
+                bclass : 'delete',
+                onpress : aksi
+            }
+            ,
+            
+            {
+                separator : true
+            } 
+            <?php }?>
+            ],
+            searchitems : [
+            {display: 'Ip address', name : 'ip_address'},
+            {display: 'Nama Area', name : 'nama_area'},
+            {display: 'nama status', name : 'nama_status', isdefault: true}
+            ],
+
+            sortname: 'id_client',
+            sortorder: 'asc',
+            usepager: true,
+            title: 'Data Jaringan Pertamina',
+            useRp: true,
+            rp: 15,
+            showTableToggleBtn : true,
+            width: '1010',
+            height: 'auto'
+        }
+        );
 
 }); 
 function doaction( celDiv, id ) {
 	$( celDiv ).click( function() {
-		var nim = $(this).parent().parent().children('td').eq(0).text();
-		$.getJSON ('index.php',{action:'get_client',id_client:id_client}, function (json) {
+		var id_client = $(this).parent().parent().children('td').eq(0).text();
+		$.getJSON ('tampil_net.php',{action:'get_client',id_client:id_client}, function (json) {
 			$('#ip_address').val(json.ip_address);
 			$('#id_area').val(json.id_area);
 			$('#id_status').val(json.id_status);
 		}); 
-		$('#nim').attr('readonly','readonly');
+		$('#id_client').attr('readonly','readonly');
 		$('#input').attr('disabled','disabled');
 		$('#edit, #delete').removeAttr('disabled');
 	});
@@ -157,66 +176,66 @@ function showResponse(responseText, statusText) {
 function resetForm() {
 	$('#input').removeAttr('disabled');
 	$('#edit, #delete').attr('disabled','disabled');
-	$('#nim').removeAttr('readonly');
+	$('#id_client').removeAttr('readonly');
 }
 
-            function aksi(com, grid) {
-                if (com == 'Delete') {
-                    var conf = confirm('Delete ' + $('.trSelected', grid).length + ' items?')
-                    if(conf){
-                        $.each($('.trSelected', grid),
-                            function(key, value){
-                                $.get('example4.php', { Delete: value.firstChild.innerText}
-                                    , function(){
+function aksi(com, grid) {
+    if (com == 'Delete') {
+        var conf = confirm('Delete ' + $('.trSelected', grid).length + ' items?')
+        if(conf){
+            $.each($('.trSelected', grid),
+                function(key, value){
+                    $.get('example4.php', { Delete: value.firstChild.innerText}
+                        , function(){
                                         // when ajax returns (callback), update the grid to refresh the data
                                         $("#flex1").flexReload();
-                                });
-                        });    
-                    }
-                }
-                else if (com == 'Edit') {
-                    var conf = confirm('Edit ' + $('.trSelected', grid).length + ' items?')
-                    if(conf){
-                        $.each($('.trSelected', grid),
-                            function(key, value){
+                                    });
+                });    
+        }
+    }
+    else if (com == 'Edit') {
+        var conf = confirm('Edit ' + $('.trSelected', grid).length + ' items?')
+        if(conf){
+            $.each($('.trSelected', grid),
+                function(key, value){
                                 // collect the data
                                 var Orgid_client = value.children[0].innerText; // in case we're changing the key
-                                var id_client = prompt("Please enter the id_client",value.children[0].innerText);
                                 var ip_address = prompt("Please enter the ip_address",value.children[1].innerText);
-                                var subnet_mask = prompt("Please enter the subnet_mask",value.children[2].innerText);
-                                var vlan = prompt("Please enter the vlan",value.children[3].innerText);
-                                var id_area = prompt("Please enter the id_area",value.children[4].innerText);
-                                var lokasi = prompt("Please enter the lokasi",value.children[5].innerText);
+                                var nama_area = prompt("Please enter the nama_area",value.children[2].innerText);
+                                var subnet_mask = prompt("Please enter the subnet_mask",value.children[3].innerText);
+                                var Vlan = prompt("Please enter the Vlan",value.children[4].innerText);
 
                                 // call the ajax to save the data to the session
                                 $.get('example4.php', 
                                     { Edit: true
                                     	, id_client : id_client
                                         , ip_address : ip_address
+                                        , nama_area : nama_area
                                         , subnet_mask: subnet_mask
-                                        , vlan: vlan
-                                        , id_area: id_area
-                                        , lokasi: lokasi  }
-                                    , function(){
+                                        , vlan: vlan}
+                                        , function(){
                                         // when ajax returns (callback), update the grid to refresh the data
                                         $("#flex1").flexReload();
-                                });
-                        });    
-                    }
-                }
-            }
+                                    });
+                            });    
+}
+}
+}
 </script>
 <table id="flex1" style="display:none font-size:18px;"></table>
 
 <script type="text/javascript">
-    $(document).ready(function() {
-        console.log($('#flex1 tr'));
-        $('#flex1 tr').each(function() {
-            console.log($(this));
-            var abbr = $(this).find("td").attr('abbr');//.val();    
-            //td.css('color','red');
-            console.log(abbr);
-        });
+    // $(document).ready(function() {
+    //     console.log($('#flex1 tr'));
+    //     $('#flex1 tr').each(function() {
+    //         console.log($(this));
+    //         var abbr = $(this).find("td").attr('abbr');//.val();    
+    //         //td.css('color','red');
+    //         console.log(abbr);
+    //     });
 
-    });
+    // });
+</script>
+<script>
+
 </script>

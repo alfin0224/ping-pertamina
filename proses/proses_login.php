@@ -1,7 +1,8 @@
 <?php 
 	include("../koneksi_db/koneksi.php");
 	$user = mysqli_real_escape_string($conn, $_POST['username']);
-	$pass = mysqli_real_escape_string($conn, $_POST['password']);
+	// $pass = mysqli_real_escape_string($conn, $_POST['password']);
+	$pass = md5(mysqli_real_escape_string($conn, $_POST['password']));
 
 	if(isset($_POST['login'])){
 		$sql = mysqli_query($conn, "SELECT * FROM user WHERE username = '$user' and password = '$pass'");
